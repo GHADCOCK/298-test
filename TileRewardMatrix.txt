@@ -1,0 +1,29 @@
+# Reward matrix for a 3x3 grid
+# Format: row,col:reward_value
+# Positive values will be displayed in blue
+# Negative values will be displayed in red
+# Values close to zero will be displayed in white/neutral colors
+
+# Row 0
+0,0:-8.5
+0,1:2.3
+0,2:5.7
+
+# Row 1
+1,0:0.8
+1,1:0.0
+1,2:-3.2
+
+# Row 2
+2,0:-6.4
+2,1:9.1
+2,2:4.5
+
+# This creates a pattern with:
+# - A high reward (blue) in the bottom-middle (2,1)
+# - A low reward (red) in the top-left (0,0) and bottom-left (2,0)
+# - A neutral zone in the center (1,1)
+# - Mixed rewards in other positions
+
+# Maximum value: 9.1
+# Minimum value: -8.5

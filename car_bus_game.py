@@ -191,10 +191,15 @@ def main():
     car_strategy, bus_strategy = fictitious_play(game)
     
     # Display example optimal strategies for a specific state
-    example_state = ((0, 0), (1, 1))  # Car at (0,0), Bus at (1,1)
-    print(f"\nState: Car at {example_state[0]}, Bus at {example_state[1]}")
-    print("Car strategy:", dict(zip(game.actions, car_strategy[example_state])))
-    print("Bus strategy:", dict(zip(game.actions, bus_strategy[example_state])))
-
+    # example_state = ((0, 0), (1, 1))  # Car at (0,0), Bus at (1,1)
+    # print(f"\nState: Car at {example_state[0]}, Bus at {example_state[1]}")
+    # print("Car strategy:", dict(zip(game.actions, car_strategy[example_state])))
+    # print("Bus strategy:", dict(zip(game.actions, bus_strategy[example_state])))
+    for car_pos in game.states:
+        for bus_pos in game.states:
+            state = (car_pos, bus_pos)
+            print(f"\nState: Car at {state[0]}, Bus at {state[1]}")
+            print("Car strategy:", dict(zip(game.actions, car_strategy[state])))
+            print("Bus strategy:", dict(zip(game.actions, bus_strategy[state])))
 if __name__ == "__main__":
     main()

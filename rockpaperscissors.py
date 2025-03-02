@@ -134,4 +134,4 @@ if __name__ == '__main__':
     # Open a file in write mode and redirect all printed output to this file.
     with open("output.txt", "w") as f:
         with redirect_stdout(f):
-            play_game(deterministic=True)  # Set to True to use deterministic mode
+            play_game(deterministic=False)  # Set to True to use deterministic mode

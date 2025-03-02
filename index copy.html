@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Animation</title>
+    <style>
+      .controls {
+        margin: 20px;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 5px;
+      }
+      .slider-container {
+        margin: 10px 0;
+      }
+      .checkbox-container {
+        margin: 10px 0;
+      }
+      button {
+        padding: 8px 16px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 5px;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      .query-container {
+        margin: 15px 0;
+        padding: 10px;
+        background: #e9e9e9;
+        border-radius: 4px;
+      }
+      .query-container input {
+        width: 50px;
+        margin: 0 5px;
+        padding: 5px;
+      }
+      #queryResult {
+        margin-top: 10px;
+        padding: 8px;
+        background: #f9f9f9;
+        border-left: 3px solid #4caf50;
+      }
+      .vehicle-position {
+        margin-bottom: 10px;
+        padding: 5px;
+        background: #f5f5f5;
+        border-radius: 4px;
+      }
+      .legend {
+        margin-top: 15px;
+        padding: 8px;
+        background: #f9f9f9;
+        border-radius: 4px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        border: 1px solid #333;
+      }
+      .car-color {
+        background: rgba(51, 255, 0, 0.8);
+      }
+      .bus-color {
+        background: rgba(218, 165, 32, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <div class="slider-container">
+        <label for="speedSlider">Animation Speed: </label>
+        <input
+          type="range"
+          id="speedSlider"
+          min="0.1"
+          max="2"
+          step="0.1"
+          value="1"
+        />
+        <span id="speedValue">1x</span>
+      </div>
+      <!-- <div class="checkbox-container">
+        <input type="checkbox" id="deterministicMode" />
+        <label for="deterministicMode">Always Choose Most Likely Move</label>
+      </div> -->
+      <button id="pauseButton">Pause</button>
+
+      <div class="query-container">
+        <h3>Query Vehicle Movement Probabilities</h3>
+
+        <div class="vehicle-position">
+          <h4>Car Position:</h4>
+          <label for="carRowInput">Row: </label>
+          <input type="number" id="carRowInput" min="0" max="2" value="0" />
+          <label for="carColInput">Column: </label>
+          <input type="number" id="carColInput" min="0" max="2" value="0" />
+        </div>
+
+        <div class="vehicle-position">
+          <h4>Bus Position:</h4>
+          <label for="busRowInput">Row: </label>
+          <input type="number" id="busRowInput" min="0" max="2" value="2" />
+          <label for="busColInput">Column: </label>
+          <input type="number" id="busColInput" min="0" max="2" value="2" />
+        </div>
+
+        <button id="queryButton">Query Probabilities</button>
+        <div id="queryResult">Result will appear here</div>
+
+        <div class="legend">
+          <h4>Arrow Visualization Legend</h4>
+          <p>
+            Arrows show movement probabilities. Longer arrows = higher
+            probability.
+          </p>
+          <div class="legend-item">
+            <div class="legend-color car-color"></div>
+            <span>Car Movement Arrows</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color bus-color"></div>
+            <span>Bus Movement Arrows</span>
+          </div>
+
+          <h4 style="margin-top: 15px">Reward Legend</h4>
+          <p>Tile colors show reward values.</p>
+          <div style="display: flex; align-items: center; margin-top: 8px">
+            <div
+              style="
+                width: 200px;
+                height: 20px;
+                background: linear-gradient(
+                  to right,
+                  rgb(255, 0, 0),
+                  rgb(255, 255, 255),
+                  rgb(0, 0, 255)
+                );
+              "
+            ></div>
+            <span style="margin-left: 10px; font-size: 12px"
+              >Negative ⟷ Zero ⟷ Positive</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <canvas id="myCanvas" width="800" height="600"></canvas>
+    <script src="script.js"></script>
+    <script src="environmentDiagramming.js"></script>
+    <!-- <script src="environment.js"></script> -->
+  </body>
+</html>
