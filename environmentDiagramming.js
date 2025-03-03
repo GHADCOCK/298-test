@@ -51,7 +51,7 @@ const directionVectors = [
 // Load the probability data from text file
 async function loadProbabilityData() {
   try {
-    const response = await fetch("BestMoveProbability.txt");
+    const response = await fetch("nash_equilibrium.txt");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
