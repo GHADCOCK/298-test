@@ -31,7 +31,16 @@
         <label for="deterministicMode">Always Choose Most Likely Move</label>
       </div> -->
           <button id="pauseButton">Pause</button>
-
+          <div class="waitStepContainer">
+            <label for="carWaitStep">Wait Step: </label>
+            <input type="number" id="carWaitStep" min="0" max="100" value="1" />
+            <span>Seconds</span>
+          </div>
+          <div class="diagram-step">
+            <label for="diagramStep">Diagram Step: </label>
+            <input type="checkbox" id="diagramStep" checked />
+            <span>Show Diagram</span>
+          </div>
           <div class="query-container">
             <h3>Query Vehicle Movement Probabilities</h3>
 
@@ -89,6 +98,21 @@
                 >
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+      <div class="modal-header">
+        <span>Settings</span>
+        <button class="minimize-btn" style="color: red">−</button>
+      </div>
+      <div class="modal-content">
+        <div class="settings">
+          <div class="setting-item">
+            <label for="darkModeToggle">Dark Mode:</label>
+            <input type="checkbox" id="darkModeToggle" />
           </div>
         </div>
       </div>

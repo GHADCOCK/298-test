@@ -16,154 +16,11 @@ Object.defineProperty(window, "isPaused", {
 
     // Additional logic when value changes
     if (!_isPaused) {
-      lastMoveTime = performance.now() - MOVE_INTERVAL; // Immediate move on resume
+      lastMoveTime = performance.now() - move_interval; // Immediate move on resume
       requestAnimationFrame(animate);
     }
   },
 });
-
-// Toggle the modal
-function toggleContent(intent = "none") {
-  const isCurrentlyMinimized = content.style.display === "none";
-
-  // If no specific intent, just toggle
-  if (intent === "none") {
-    if (isCurrentlyMinimized) {
-      maximize();
-    } else {
-      minimize();
-    }
-  }
-  // If specific intent, only act if needed
-  else if (intent === "minimize" && !isCurrentlyMinimized) {
-    minimize();
-  } else if (intent === "maximize" && isCurrentlyMinimized) {
-    maximize();
-  }
-}
-
-function minimize() {
-  modal.dataset.previousHeight = modal.offsetHeight + "px";
-  content.style.display = "none";
-  minimizeBtn.textContent = "+";
-  modal.style.height = header.offsetHeight + "px";
-}
-
-function maximize() {
-  content.style.display = "block";
-  minimizeBtn.textContent = "−";
-  if (modal.dataset.previousHeight) {
-    modal.style.height = modal.dataset.previousHeight;
-    modal.dataset.previousHeight = "";
-  } else {
-    modal.style.height = "auto";
-  }
-}
-
-// Create a modal for controls
-function setupDraggableModal() {
-  const modal = document.getElementById("controlsModal");
-  const header = modal.querySelector(".modal-header");
-  const content = modal.querySelector(".modal-content");
-  const minimizeBtn = modal.querySelector(".minimize-btn");
-  let isDragging = false;
-  let currentX;
-  let currentY;
-  let initialX;
-  let initialY;
-  let xOffset = 20;
-  let yOffset = 20;
-
-  // Set initial position
-  modal.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
-
-  function toggleContent(intent = "none") {
-    const isCurrentlyMinimized = content.style.display === "none";
-
-    // If no specific intent, just toggle
-    if (intent === "none") {
-      if (isCurrentlyMinimized) {
-        maximize();
-      } else {
-        minimize();
-      }
-    }
-    // If specific intent, only act if needed
-    else if (intent === "minimize" && !isCurrentlyMinimized) {
-      minimize();
-    } else if (intent === "maximize" && isCurrentlyMinimized) {
-      maximize();
-    }
-  }
-
-  function minimize() {
-    modal.dataset.previousHeight = modal.offsetHeight + "px";
-    content.style.display = "none";
-    minimizeBtn.textContent = "+";
-    modal.style.height = header.offsetHeight + "px";
-  }
-
-  function maximize() {
-    content.style.display = "block";
-    minimizeBtn.textContent = "−";
-    if (modal.dataset.previousHeight) {
-      modal.style.height = modal.dataset.previousHeight;
-      modal.dataset.previousHeight = "";
-    } else {
-      modal.style.height = "auto";
-    }
-  }
-
-  // Handle minimize/maximize
-  minimizeBtn.addEventListener("click", () => {
-    toggleContent();
-  });
-
-  function dragStart(e) {
-    if (e.type === "touchstart") {
-      initialX = e.touches[0].clientX - xOffset;
-      initialY = e.touches[0].clientY - yOffset;
-    } else {
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
-    }
-
-    if (e.target === header) {
-      isDragging = true;
-    }
-  }
-
-  function dragEnd() {
-    isDragging = false;
-  }
-
-  function drag(e) {
-    if (isDragging) {
-      e.preventDefault();
-
-      if (e.type === "touchmove") {
-        currentX = e.touches[0].clientX - initialX;
-        currentY = e.touches[0].clientY - initialY;
-      } else {
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-      }
-
-      xOffset = currentX;
-      yOffset = currentY;
-
-      modal.style.transform = `translate(${currentX}px, ${currentY}px)`;
-    }
-  }
-
-  header.addEventListener("touchstart", dragStart, false);
-  header.addEventListener("touchend", dragEnd, false);
-  header.addEventListener("touchmove", drag, false);
-  header.addEventListener("mousedown", dragStart, false);
-  document.addEventListener("mouseup", dragEnd, false);
-  document.addEventListener("mousemove", drag, false);
-  toggleContent("minimize");
-}
 
 let speedMultiplier = 1;
 
@@ -235,12 +92,14 @@ async function loadProbabilityData() {
 }
 
 // Query position function
-function queryPosition() {
+function queryPosition(pause = true) {
   const carRow = parseInt(carRowInput.value);
   const carCol = parseInt(carColInput.value);
   const busRow = parseInt(busRowInput.value);
   const busCol = parseInt(busColInput.value);
-  isPaused = true;
+  if (pause) {
+    isPaused = true;
+  }
   // Validate input
   if (
     isNaN(carRow) ||
@@ -450,7 +309,7 @@ pauseButton.addEventListener("click", () => {
   isPaused = !isPaused;
   // pauseButton.textContent = isPaused ? "Resume" : "Pause";
   if (!isPaused) {
-    lastMoveTime = performance.now() - MOVE_INTERVAL; // Immediate move on resume
+    lastMoveTime = performance.now() - move_interval; // Immediate move on resume
     requestAnimationFrame(animate);
   }
 });
@@ -598,6 +457,8 @@ let busTargetPosition = [2, 2];
 let busIntermediatePosition = null;
 let busMoveProgress = 1;
 
+let diagramStep = document.getElementById("diagramStep");
+
 /*
  * Animation timing constants
  * MOVE_DURATION: Time for one movement animation (ms)
@@ -606,7 +467,12 @@ let busMoveProgress = 1;
 // Timing constants
 const MOVE_DURATION = 400;
 let lastMoveTime = 0;
-const MOVE_INTERVAL = 1000;
+const MOVE_INTERVAL_LABEL = document.getElementById("carWaitStep"); //1000;
+let move_interval = MOVE_INTERVAL_LABEL.value * 1000;
+
+MOVE_INTERVAL_LABEL.addEventListener("input", (e) => {
+  move_interval = e.target.value * 1000;
+});
 
 /**
  * Draws a single grid square with optional reward-based coloring
@@ -845,6 +711,7 @@ function moveVehicleRandomly(
  * @param {number} currentTime - Current timestamp
  */
 function animate(currentTime) {
+  // animate function
   if (isPaused) return;
 
   // Store the current drawings to check for arrows
@@ -854,7 +721,7 @@ function animate(currentTime) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   createGrid();
 
-  if (currentTime - lastMoveTime >= MOVE_INTERVAL / speedMultiplier) {
+  if (currentTime - lastMoveTime >= move_interval / speedMultiplier) {
     // Get current state key
     const key = `${carPosition[0]},${carPosition[1]},${busPosition[0]},${busPosition[1]}`;
     // Get probabilities for this state
@@ -932,6 +799,15 @@ function animate(currentTime) {
     busIntermediatePosition = null;
   }
 
+  if (diagramStep.checked && carMoveProgress === 1 && busMoveProgress === 1) {
+    carRowInput.value = carPosition[0];
+    carColInput.value = carPosition[1];
+    busRowInput.value = busPosition[0];
+    busColInput.value = busPosition[1];
+    // _isPaused = true;
+    queryPosition(false);
+  }
+
   requestAnimationFrame(animate);
 }
 
@@ -1005,7 +881,273 @@ function setupCanvas() {
   drawCar(carPixelX, carPixelY);
   drawBus(busPixelX, busPixelY);
   setupDraggableModal();
+  setupSettingsModal();
   requestAnimationFrame(animate);
+}
+
+function setupSettingsModal() {
+  const settingsModal = document.getElementById("settingsModal");
+  const settingsHeader = settingsModal.querySelector(".modal-header");
+  const settingsContent = settingsModal.querySelector(".modal-content");
+  const settingsMinimizeBtn = settingsModal.querySelector(".minimize-btn");
+  const darkModeToggle = document.getElementById("darkModeToggle");
+
+  // Position settings modal
+  settingsModal.style.transform = "translate(240px, 20px)";
+
+  function toggleContent(intent = "none") {
+    const isCurrentlyMinimized = settingsContent.style.display === "none";
+
+    // If no specific intent, just toggle
+    if (intent === "none") {
+      if (isCurrentlyMinimized) {
+        maximize();
+      } else {
+        minimize();
+      }
+    }
+    // If specific intent, only act if needed
+    else if (intent === "minimize" && !isCurrentlyMinimized) {
+      minimize();
+    } else if (intent === "maximize" && isCurrentlyMinimized) {
+      maximize();
+    }
+  }
+
+  function minimize() {
+    settingsModal.dataset.previousHeight = settingsModal.offsetHeight + "px";
+    settingsContent.style.display = "none";
+    settingsMinimizeBtn.textContent = "+";
+    settingsModal.style.height = settingsHeader.offsetHeight + "px";
+  }
+
+  function maximize() {
+    settingsContent.style.display = "block";
+    settingsMinimizeBtn.textContent = "−";
+    if (settingsModal.dataset.previousHeight) {
+      settingsModal.style.height = settingsModal.dataset.previousHeight;
+      settingsModal.dataset.previousHeight = "";
+    } else {
+      settingsModal.style.height = "auto";
+    }
+  }
+
+  // Setup minimize functionality
+  settingsMinimizeBtn.addEventListener("click", () => {
+    toggleContent();
+  });
+
+  // Setup dark mode toggle
+  darkModeToggle.addEventListener("change", () => {
+    document.body.classList.toggle("dark-mode");
+    // Save preference
+    localStorage.setItem("darkMode", darkModeToggle.checked);
+  });
+
+  // Load saved preference
+  const savedDarkMode = localStorage.getItem("darkMode") === "true";
+  darkModeToggle.checked = savedDarkMode;
+  if (savedDarkMode) {
+    document.body.classList.add("dark-mode");
+  }
+
+  // Make settings modal draggable
+  let isDragging = false;
+  let currentX;
+  let currentY;
+  let initialX;
+  let initialY;
+  let xOffset = 620;
+  let yOffset = 20;
+
+  settingsModal.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+  function dragStart(e) {
+    if (e.type === "touchstart") {
+      initialX = e.touches[0].clientX - xOffset;
+      initialY = e.touches[0].clientY - yOffset;
+    } else {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+    }
+
+    if (e.target === settingsHeader) {
+      isDragging = true;
+    }
+  }
+
+  function dragEnd() {
+    isDragging = false;
+  }
+
+  function drag(e) {
+    if (isDragging) {
+      e.preventDefault();
+
+      if (e.type === "touchmove") {
+        currentX = e.touches[0].clientX - initialX;
+        currentY = e.touches[0].clientY - initialY;
+      } else {
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+      }
+
+      xOffset = currentX;
+      yOffset = currentY;
+
+      settingsModal.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+  }
+
+  settingsHeader.addEventListener("touchstart", dragStart, false);
+  settingsHeader.addEventListener("touchend", dragEnd, false);
+  settingsHeader.addEventListener("touchmove", drag, false);
+  settingsHeader.addEventListener("mousedown", dragStart, false);
+  document.addEventListener("mouseup", dragEnd, false);
+  document.addEventListener("mousemove", drag, false);
+}
+
+// Toggle the modal
+function toggleContent(intent = "none") {
+  const isCurrentlyMinimized = content.style.display === "none";
+
+  // If no specific intent, just toggle
+  if (intent === "none") {
+    if (isCurrentlyMinimized) {
+      maximize();
+    } else {
+      minimize();
+    }
+  }
+  // If specific intent, only act if needed
+  else if (intent === "minimize" && !isCurrentlyMinimized) {
+    minimize();
+  } else if (intent === "maximize" && isCurrentlyMinimized) {
+    maximize();
+  }
+}
+
+function minimize() {
+  modal.dataset.previousHeight = modal.offsetHeight + "px";
+  content.style.display = "none";
+  minimizeBtn.textContent = "+";
+  modal.style.height = header.offsetHeight + "px";
+}
+
+function maximize() {
+  content.style.display = "block";
+  minimizeBtn.textContent = "−";
+  if (modal.dataset.previousHeight) {
+    modal.style.height = modal.dataset.previousHeight;
+    modal.dataset.previousHeight = "";
+  } else {
+    modal.style.height = "auto";
+  }
+}
+
+// Create a modal for controls
+function setupDraggableModal() {
+  // Controls Modal
+  const modal = document.getElementById("controlsModal");
+  const header = modal.querySelector(".modal-header");
+  const content = modal.querySelector(".modal-content");
+  const minimizeBtn = modal.querySelector(".minimize-btn");
+  let isDragging = false;
+  let currentX;
+  let currentY;
+  let initialX;
+  let initialY;
+  let xOffset = 620;
+  let yOffset = 220;
+
+  // Set initial position
+  modal.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+
+  function toggleContent(intent = "none") {
+    const isCurrentlyMinimized = content.style.display === "none";
+
+    // If no specific intent, just toggle
+    if (intent === "none") {
+      if (isCurrentlyMinimized) {
+        maximize();
+      } else {
+        minimize();
+      }
+    }
+    // If specific intent, only act if needed
+    else if (intent === "minimize" && !isCurrentlyMinimized) {
+      minimize();
+    } else if (intent === "maximize" && isCurrentlyMinimized) {
+      maximize();
+    }
+  }
+
+  function minimize() {
+    modal.dataset.previousHeight = modal.offsetHeight + "px";
+    content.style.display = "none";
+    minimizeBtn.textContent = "+";
+    modal.style.height = header.offsetHeight + "px";
+  }
+
+  function maximize() {
+    content.style.display = "block";
+    minimizeBtn.textContent = "−";
+    if (modal.dataset.previousHeight) {
+      modal.style.height = modal.dataset.previousHeight;
+      modal.dataset.previousHeight = "";
+    } else {
+      modal.style.height = "auto";
+    }
+  }
+
+  // Handle minimize/maximize
+  minimizeBtn.addEventListener("click", () => {
+    toggleContent();
+  });
+
+  function dragStart(e) {
+    if (e.type === "touchstart") {
+      initialX = e.touches[0].clientX - xOffset;
+      initialY = e.touches[0].clientY - yOffset;
+    } else {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+    }
+
+    if (e.target === header) {
+      isDragging = true;
+    }
+  }
+
+  function dragEnd() {
+    isDragging = false;
+  }
+
+  function drag(e) {
+    if (isDragging) {
+      e.preventDefault();
+
+      if (e.type === "touchmove") {
+        currentX = e.touches[0].clientX - initialX;
+        currentY = e.touches[0].clientY - initialY;
+      } else {
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+      }
+
+      xOffset = currentX;
+      yOffset = currentY;
+
+      modal.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+  }
+
+  header.addEventListener("touchstart", dragStart, false);
+  header.addEventListener("touchend", dragEnd, false);
+  header.addEventListener("touchmove", drag, false);
+  header.addEventListener("mousedown", dragStart, false);
+  document.addEventListener("mouseup", dragEnd, false);
+  document.addEventListener("mousemove", drag, false);
+  // toggleContent("minimize");
 }
 
 // Start the animation
