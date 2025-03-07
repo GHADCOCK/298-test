@@ -2,8 +2,8 @@ public enum ActionSpace {
     UP,
     DOWN,
     LEFT,
-    RIGHT,
-    STOP;
+    RIGHT;
+    // STOP;
 
     public static final ActionSpace[][] ALL_ACTIONS = calculateAllActions();
 

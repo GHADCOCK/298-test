@@ -5,12 +5,12 @@ public class MarkovGame {
     // Hyperparameters for the game
     public static final int HEIGHT = 3;
     public static final int WIDTH = 3;
-    public static final int NUM_AGENTS = 3;
+    public static final int NUM_AGENTS = 2;
 
     // Hyperparameters for fictitious play
     public static final double DISCOUNT_FACTOR = 0.9;
     private static final double PERCENT_FORGET = 0.1;
-    private static final int MAX_EPISODES = 200;
+    private static final int MAX_EPISODES = 2000;
     public static int numEpisodes;
     private static final Random r = new Random();
 
