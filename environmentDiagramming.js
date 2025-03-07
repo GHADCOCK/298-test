@@ -267,6 +267,12 @@ function drawArrow(x1, y1, x2, y2, color, lineWidth = 2) {
   const headSize = 10; // Arrow head size
   const angle = Math.atan2(y2 - y1, x2 - x1);
 
+  // Calculate where the rectangle should end (before the arrow head)
+  const shortenedLength =
+    Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) - headSize;
+  const endX = x1 + Math.cos(angle) * shortenedLength;
+  const endY = y1 + Math.sin(angle) * shortenedLength;
+
   // Save context
   ctx.save();
 
@@ -275,10 +281,10 @@ function drawArrow(x1, y1, x2, y2, color, lineWidth = 2) {
   ctx.fillStyle = color;
   ctx.lineWidth = lineWidth;
 
-  // Draw the line
+  // Draw the line (rectangle portion)
   ctx.beginPath();
   ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
+  ctx.lineTo(endX, endY);
   ctx.stroke();
 
   // Draw the arrow head
