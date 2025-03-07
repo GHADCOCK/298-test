@@ -76,8 +76,8 @@ async function loadProbabilityData() {
           if (probArray.length === 8) {
             // Ensure correct format
             positionProbabilities[position.trim()] = {
-              car: probArray.slice(0, 4), // U1, D1, L1, R1
-              bus: probArray.slice(4), // U2, D2, L2, R2
+              bus: probArray.slice(0, 4), // U1, D1, L1, R1
+              car: probArray.slice(4), // U2, D2, L2, R2
             };
           }
         }
@@ -140,7 +140,7 @@ function queryPosition(pause = true) {
   drawBus(busCol * 200, busRow * 200);
 
   // Get probability for this state
-  const key = `${carRow},${carCol},${busRow},${busCol}`;
+  const key = `${busRow},${busCol},${carRow},${carCol}`; // Position Order: Bus, Car
   const data = positionProbabilities[key];
 
   if (data) {
@@ -723,7 +723,7 @@ function animate(currentTime) {
 
   if (currentTime - lastMoveTime >= move_interval / speedMultiplier) {
     // Get current state key
-    const key = `${carPosition[0]},${carPosition[1]},${busPosition[0]},${busPosition[1]}`;
+    const key = `${busPosition[0]},${busPosition[1]},${carPosition[0]},${carPosition[1]}`; // Position Order: Bus, Car
     // Get probabilities for this state
     const data = positionProbabilities[key];
     if (data) {
