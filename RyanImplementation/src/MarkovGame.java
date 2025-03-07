@@ -5,7 +5,7 @@ public class MarkovGame {
     // Hyperparameters for the game
     public static final int HEIGHT = 3;
     public static final int WIDTH = 3;
-    public static final int NUM_AGENTS = 3;
+    public static final int NUM_AGENTS = 2;
 
     // Hyperparameters for fictitious play
     public static final double DISCOUNT_FACTOR = 0.9;

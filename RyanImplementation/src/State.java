@@ -123,21 +123,32 @@ public class State implements Serializable {
                         state[2*a+1] < 0 || state[2*a+1] >= MarkovGame.HEIGHT)
                     isOffMap[a] = true;
 
-            if (isOffMap[0] && isOffMap[1] && isOffMap[2]) {
-                reward[0] = -2000;
+            // if (isOffMap[0] && isOffMap[1] && isOffMap[2]) {
+            //     reward[0] = -2000;
+            //     reward[1] = -1000;
+            //     reward[2] = -1000;
+            // } else if (isOffMap[0]) {
+            //     reward[0] = -2000;
+            //     reward[1] = 1000;
+            //     reward[2] = 1000;
+            // } else {
+            //     // One of the evaders is off the map
+            //     reward[0] = 2000;
+            //     reward[1] = -1000;
+            //     reward[2] = -1000;
+            // }
+            if (isOffMap[0] && isOffMap[1]){
+                reward[0] = -1000;
                 reward[1] = -1000;
-                reward[2] = -1000;
-            } else if (isOffMap[0]) {
-                reward[0] = -2000;
-                reward[1] = 1000;
-                reward[2] = 1000;
-            } else {
-                // One of the evaders is off the map
-                reward[0] = 2000;
-                reward[1] = -1000;
-                reward[2] = -1000;
             }
-
+            else if (isOffMap[0]) {
+                reward[0] = -1000;
+                reward[1] = 1000;
+            }
+            else if (isOffMap[1]) {
+                reward[0] = 1000;
+                reward[1] = -1000;
+            }
             return;
         }
 
@@ -156,11 +167,11 @@ public class State implements Serializable {
                     reward[1] -= 40;
         }
 
-        reward[2] = reward[1];
+        // reward[2] = reward[1];
 
         // Make reward for second agent so that it's a 0 sum game
-        reward[0] = -2 * reward[1];
-        // reward[0] = -reward[1];
+        // reward[0] = -2 * reward[1];
+        reward[0] = -reward[1];
     }
 
     public void initializeForFictitiousPlay() {

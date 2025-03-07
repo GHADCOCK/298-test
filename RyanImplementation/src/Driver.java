@@ -21,7 +21,7 @@ public class Driver extends Application {
     // Size of the app. Number represents pixel length of one tile
     public static final int SIZE = 128;
     // If SIM is false, runs Q planning and saves the results. If SIM is true, runs a simulation of the cars
-    private static final boolean SIM = true;
+    private static final boolean SIM = false;
 
     public static final ImageView[] CARS = new ImageView[] {
             getImageView("redCar.png"),
@@ -32,8 +32,8 @@ public class Driver extends Application {
     public static void main(String[] args) {
         if (!SIM) {
             MarkovGame.qPlanning();
-            MarkovGame.saveStatesAsObject("nash_equilibrium.ser");
-            //MarkovGame.saveStatesToCSV("nash_equilibrium.csv");
+            // MarkovGame.saveStatesAsObject("nash_equilibrium.ser");
+            MarkovGame.saveStatesToCSV("nash_equilibrium.csv");
         } else {
             MarkovGame.loadStatesAsObject("nash_equilibrium.ser");
             //MarkovGame.loadStatesFromCSV("nash_equilibrium.csv");
