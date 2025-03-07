@@ -5,12 +5,12 @@ public class MarkovGame {
     // Hyperparameters for the game
     public static final int HEIGHT = 3;
     public static final int WIDTH = 3;
-    public static final int NUM_AGENTS = 2;
+    public static final int NUM_AGENTS = 3;
 
     // Hyperparameters for fictitious play
     public static final double DISCOUNT_FACTOR = 0.9;
     private static final double PERCENT_FORGET = 0.1;
-    private static final int MAX_EPISODES = 2000;
+    private static final int MAX_EPISODES = 200;
     public static int numEpisodes;
     private static final Random r = new Random();
 
@@ -90,16 +90,16 @@ public class MarkovGame {
                 StringBuilder line = new StringBuilder();
 
                 // Append state values
-                for (int value : s.state) {
+                for (int value : s.state)
                     line.append(value).append(",");
-                }
+
+                // Remove trailing comma and write to file
+                line.replace(line.length() - 1, line.length(), ":");
 
                 // Append NE values
-                for (double[] row : s.NE) {
-                    for (double value : row) {
+                for (double[] row : s.NE)
+                    for (double value : row)
                         line.append(value).append(",");
-                    }
-                }
 
                 // Remove trailing comma and write to file
                 writer.write(line.substring(0, line.length() - 1));
@@ -124,18 +124,15 @@ public class MarkovGame {
 
                 // Extract state values
                 int[] state = new int[2*NUM_AGENTS];
-                for (int i = 0; i < state.length; i++) {
+                for (int i = 0; i < state.length; i++)
                     state[i] = Integer.parseInt(values[i]);
-                }
 
                 // Extract NE values
                 double[][] NE = new double[NUM_AGENTS][ActionSpace.values().length];
                 int index = state.length;
-                for (int i = 0; i < NE.length; i++) {
-                    for (int j = 0; j < ActionSpace.values().length; j++) {
+                for (int i = 0; i < NE.length; i++)
+                    for (int j = 0; j < ActionSpace.values().length; j++)
                         NE[i][j] = Double.parseDouble(values[index++]);
-                    }
-                }
 
                 states[k] = new State(state, NE);
             }
