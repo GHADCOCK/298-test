@@ -21,6 +21,150 @@ Object.defineProperty(window, "isPaused", {
     }
   },
 });
+
+// Toggle the modal
+function toggleContent(intent = "none") {
+  const isCurrentlyMinimized = content.style.display === "none";
+
+  // If no specific intent, just toggle
+  if (intent === "none") {
+    if (isCurrentlyMinimized) {
+      maximize();
+    } else {
+      minimize();
+    }
+  }
+  // If specific intent, only act if needed
+  else if (intent === "minimize" && !isCurrentlyMinimized) {
+    minimize();
+  } else if (intent === "maximize" && isCurrentlyMinimized) {
+    maximize();
+  }
+}
+
+function minimize() {
+  modal.dataset.previousHeight = modal.offsetHeight + "px";
+  content.style.display = "none";
+  minimizeBtn.textContent = "+";
+  modal.style.height = header.offsetHeight + "px";
+}
+
+function maximize() {
+  content.style.display = "block";
+  minimizeBtn.textContent = "−";
+  if (modal.dataset.previousHeight) {
+    modal.style.height = modal.dataset.previousHeight;
+    modal.dataset.previousHeight = "";
+  } else {
+    modal.style.height = "auto";
+  }
+}
+
+// Create a modal for controls
+function setupDraggableModal() {
+  const modal = document.getElementById("controlsModal");
+  const header = modal.querySelector(".modal-header");
+  const content = modal.querySelector(".modal-content");
+  const minimizeBtn = modal.querySelector(".minimize-btn");
+  let isDragging = false;
+  let currentX;
+  let currentY;
+  let initialX;
+  let initialY;
+  let xOffset = 20;
+  let yOffset = 20;
+
+  // Set initial position
+  modal.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+
+  function toggleContent(intent = "none") {
+    const isCurrentlyMinimized = content.style.display === "none";
+
+    // If no specific intent, just toggle
+    if (intent === "none") {
+      if (isCurrentlyMinimized) {
+        maximize();
+      } else {
+        minimize();
+      }
+    }
+    // If specific intent, only act if needed
+    else if (intent === "minimize" && !isCurrentlyMinimized) {
+      minimize();
+    } else if (intent === "maximize" && isCurrentlyMinimized) {
+      maximize();
+    }
+  }
+
+  function minimize() {
+    modal.dataset.previousHeight = modal.offsetHeight + "px";
+    content.style.display = "none";
+    minimizeBtn.textContent = "+";
+    modal.style.height = header.offsetHeight + "px";
+  }
+
+  function maximize() {
+    content.style.display = "block";
+    minimizeBtn.textContent = "−";
+    if (modal.dataset.previousHeight) {
+      modal.style.height = modal.dataset.previousHeight;
+      modal.dataset.previousHeight = "";
+    } else {
+      modal.style.height = "auto";
+    }
+  }
+
+  // Handle minimize/maximize
+  minimizeBtn.addEventListener("click", () => {
+    toggleContent();
+  });
+
+  function dragStart(e) {
+    if (e.type === "touchstart") {
+      initialX = e.touches[0].clientX - xOffset;
+      initialY = e.touches[0].clientY - yOffset;
+    } else {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+    }
+
+    if (e.target === header) {
+      isDragging = true;
+    }
+  }
+
+  function dragEnd() {
+    isDragging = false;
+  }
+
+  function drag(e) {
+    if (isDragging) {
+      e.preventDefault();
+
+      if (e.type === "touchmove") {
+        currentX = e.touches[0].clientX - initialX;
+        currentY = e.touches[0].clientY - initialY;
+      } else {
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+      }
+
+      xOffset = currentX;
+      yOffset = currentY;
+
+      modal.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+  }
+
+  header.addEventListener("touchstart", dragStart, false);
+  header.addEventListener("touchend", dragEnd, false);
+  header.addEventListener("touchmove", drag, false);
+  header.addEventListener("mousedown", dragStart, false);
+  document.addEventListener("mouseup", dragEnd, false);
+  document.addEventListener("mousemove", drag, false);
+  toggleContent("minimize");
+}
+
 let speedMultiplier = 1;
 
 // Position probability data from text file
@@ -860,7 +1004,7 @@ function setupCanvas() {
   const [busPixelX, busPixelY] = getPixelPosition(busPosition);
   drawCar(carPixelX, carPixelY);
   drawBus(busPixelX, busPixelY);
-
+  setupDraggableModal();
   requestAnimationFrame(animate);
 }
 
