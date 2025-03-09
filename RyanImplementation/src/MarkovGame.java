@@ -5,12 +5,12 @@ public class MarkovGame {
     // Hyperparameters for the game
     public static final int HEIGHT = 3;
     public static final int WIDTH = 3;
-    public static final int NUM_AGENTS = 2;
+    public static final int NUM_AGENTS = 3;
 
     // Hyperparameters for fictitious play
     public static final double DISCOUNT_FACTOR = 0.9;
-    private static final double PERCENT_FORGET = 0.1;
-    private static final int MAX_EPISODES = 2000;
+    private static final int NUM_FORGET = 30;
+
     public static int numEpisodes;
     private static final Random r = new Random();
 
@@ -29,25 +29,32 @@ public class MarkovGame {
         for (State each : states)
             each.initializeForFictitiousPlay();
 
-        for (numEpisodes = ActionSpace.values().length; numEpisodes < MAX_EPISODES; numEpisodes++) {
+        boolean hasConverged = false;
+
+        for (numEpisodes = ActionSpace.values().length; !hasConverged; numEpisodes++) {
+            hasConverged = true;
+
             for (State each : states) {
                 each.updatePastActions();
                 each.updateExpectedValues();
-                each.updateQTable();
+                if (each.updateQTable() > 0.1)
+                    hasConverged = false;
             }
 
-            if (numEpisodes < MAX_EPISODES * PERCENT_FORGET && (numEpisodes+1) >= MAX_EPISODES * PERCENT_FORGET)
+            if (numEpisodes + 1 == NUM_FORGET)
                 for (State each : states)
                     each.initializeFirstActions();
 
             if (numEpisodes % 100 == 0)
-                System.out.println(numEpisodes);
+                System.out.println("Episode " + numEpisodes);
         }
 
         for (State each : states)
             each.forgetFirstActions();
 
-        numEpisodes *= 1 - PERCENT_FORGET;
+        numEpisodes *= 1 - NUM_FORGET / (double)numEpisodes;
+
+        System.out.println("Converged after " + numEpisodes + " episodes");
     }
 
     public static ActionSpace getMoveFromPolicy(double[] policy) {
@@ -83,18 +90,14 @@ public class MarkovGame {
     // Method to save states to CSV
     public static void saveStatesToCSV(String filename) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            writer.write("X_1,Y_1,X_2,Y_2,U1,D1,L1,R1,S1,U2,D2,L2,R2,S2");
+            writer.write("X_1,Y_1,X_2,Y_2,U1,D1,L1,R1,U2,D2,L2,R2");
             writer.newLine();
 
             for (State s : states) {
                 StringBuilder line = new StringBuilder();
 
                 // Append state values
-                for (int value : s.state)
-                    line.append(value).append(",");
-
-                // Remove trailing comma and write to file
-                line.replace(line.length() - 1, line.length(), ":");
+                line.append(s.state[1] + "," + s.state[0] + "," + s.state[3] + "," + s.state[2] + ":");
 
                 // Append NE values
                 for (double[] row : s.NE)
@@ -113,7 +116,7 @@ public class MarkovGame {
     }
 
     // Method to load states from CSV
-    public static void loadStatesFromCSV(String filename) {
+    /*public static void loadStatesFromCSV(String filename) {
         states = new State[(int)(Math.pow(WIDTH, NUM_AGENTS) * Math.pow(HEIGHT, NUM_AGENTS))];
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -140,5 +143,5 @@ public class MarkovGame {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }

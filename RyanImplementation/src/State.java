@@ -53,11 +53,13 @@ public class State implements Serializable {
     public final int[] state;
     // If there is a car which is off the board or not
     private final boolean offBoard;
-    // The Nash equilibrium at this state
+    // The Nash equilibrium of this state
     public double[][] NE;
 
     public double[] reward;
+    // Maps all possible actions from this space to the expected values for taking that action
     private Map<ActionSpace[], double[]> QTable;
+    // The expected value of each agent at this state
     private double[] expectedValues;
 
     private int[][] pastActions;
@@ -104,18 +106,6 @@ public class State implements Serializable {
 
         // Off map punishment (If both run off the map, the rewards don't sum up to 0, but okay since neither will take
         // this action)
-        /*if (isOffMap[0] && isOffMap[1]){
-            reward[0] = -1000;
-            reward[1] = -1000;
-        }
-        else if (isOffMap[0]) {
-            reward[0] = -1000;
-            reward[1] = 1000;
-        }
-        else if (isOffMap[1]) {
-            reward[0] = 1000;
-            reward[1] = -1000;
-        }*/
         if (offBoard) {
             boolean[] isOffMap = new boolean[MarkovGame.NUM_AGENTS];
             for (int a = 0; a < MarkovGame.NUM_AGENTS; a++)
@@ -123,21 +113,7 @@ public class State implements Serializable {
                         state[2*a+1] < 0 || state[2*a+1] >= MarkovGame.HEIGHT)
                     isOffMap[a] = true;
 
-            // if (isOffMap[0] && isOffMap[1] && isOffMap[2]) {
-            //     reward[0] = -2000;
-            //     reward[1] = -1000;
-            //     reward[2] = -1000;
-            // } else if (isOffMap[0]) {
-            //     reward[0] = -2000;
-            //     reward[1] = 1000;
-            //     reward[2] = 1000;
-            // } else {
-            //     // One of the evaders is off the map
-            //     reward[0] = 2000;
-            //     reward[1] = -1000;
-            //     reward[2] = -1000;
-            // }
-            if (isOffMap[0] && isOffMap[1]){
+            /*if (isOffMap[0] && isOffMap[1]){
                 reward[0] = -1000;
                 reward[1] = -1000;
             }
@@ -148,7 +124,22 @@ public class State implements Serializable {
             else if (isOffMap[1]) {
                 reward[0] = 1000;
                 reward[1] = -1000;
+            }*/
+            if (isOffMap[0] && isOffMap[1] && isOffMap[2]) {
+                reward[0] = -2000;
+                reward[1] = -1000;
+                reward[2] = -1000;
+            } else if (isOffMap[0]) {
+                reward[0] = -2000;
+                reward[1] = 1000;
+                reward[2] = 1000;
+            } else {
+                // One of the evaders is off the map
+                reward[0] = 2000;
+                reward[1] = -1000;
+                reward[2] = -1000;
             }
+
             return;
         }
 
@@ -167,11 +158,11 @@ public class State implements Serializable {
                     reward[1] -= 40;
         }
 
-        // reward[2] = reward[1];
+        reward[2] = reward[1];
 
         // Make reward for second agent so that it's a 0 sum game
-        // reward[0] = -2 * reward[1];
-        reward[0] = -reward[1];
+        reward[0] = -2 * reward[1];
+        // reward[0] = -reward[1];
     }
 
     public void initializeForFictitiousPlay() {
@@ -211,11 +202,21 @@ public class State implements Serializable {
         return pastActions[agent][action] / (double) MarkovGame.numEpisodes;
     }
 
-    public void updateQTable() {
+    public double updateQTable() {
+        double avgDifference = 0;
+        double[] newValues;
+        double[] oldValues;
+        State nextState;
+
         for (ActionSpace[] each : ActionSpace.ALL_ACTIONS) {
-            State nextState = transition(each);
-            QTable.replace(each, nextState.expectedValues.clone());
+            nextState = transition(each);
+            newValues = nextState.expectedValues.clone();
+            oldValues = QTable.replace(each, newValues);
+            for (int a = 0; a < MarkovGame.NUM_AGENTS; a++)
+                avgDifference += Math.abs(oldValues[a] - newValues[a]);
         }
+
+        return avgDifference / (MarkovGame.NUM_AGENTS * ActionSpace.ALL_ACTIONS.length);
     }
 
     public ActionSpace[] bestResponse() {
