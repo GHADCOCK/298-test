@@ -62,7 +62,27 @@ async function loadProbabilityData() {
 
     const text = await response.text();
     const lines = text.split("\n");
-
+    // Get the number of rows and columns from the nash file
+    let maxRow = 0;
+    let maxCol = 0;
+    lines.forEach((line) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith("#")) {
+        const [position] = trimmedLine.split(":");
+        if (position) {
+          const [row, col] = position.split(",").map((n) => parseInt(n));
+          if (isNaN(row) || isNaN(col)) {
+            // alert("Invalid row or column: " + row + " " + col);
+            return;
+          }
+          maxRow = Math.max(maxRow, row);
+          maxCol = Math.max(maxCol, col);
+        }
+      }
+    });
+    // alert(maxRow + " " + maxCol);
+    NUM_ROWS = maxRow + 1;
+    NUM_COLS = maxCol + 1;
     // Parse the text file content
     // New format: X_1,Y_1,X_2,Y_2:U1,D1,L1,R1,U2,D2,L2,R2
     lines.forEach((line) => {
@@ -86,8 +106,10 @@ async function loadProbabilityData() {
         }
       }
     });
+    // setupCanvas();
 
     console.log("Probability data loaded:", positionProbabilities);
+    return true;
   } catch (error) {
     console.error("Error loading probability data:", error);
     queryResult.textContent = "Error loading probability data";
@@ -970,15 +992,16 @@ function calculatePosition(currentPos, targetPos, intermediatePos, progress) {
 /**
  * Initial canvas setup and animation start
  */
-function setupCanvas() {
+async function setupCanvas() {
   canvas.width = 200 * NUM_COLS * SCALE_FACTOR;
   canvas.height = 200 * NUM_ROWS * SCALE_FACTOR;
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Load both datasets
-  loadProbabilityData();
-  loadRewardData();
+  // loadProbabilityData();
+  const probabilitiesLoaded = await loadProbabilityData();
+  await loadRewardData();
 
   createGrid();
 
