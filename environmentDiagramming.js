@@ -48,6 +48,9 @@ const directionVectors = [
   [-1, 0], // Left
   [1, 0], // Right
 ];
+let NUM_ROWS = 3;
+let NUM_COLS = 3;
+let SCALE_FACTOR = 1;
 
 // Load the probability data from text file
 async function loadProbabilityData() {
@@ -107,16 +110,17 @@ function queryPosition(pause = true) {
     isNaN(busRow) ||
     isNaN(busCol) ||
     carRow < 0 ||
-    carRow > 2 ||
+    carRow > NUM_ROWS - 1 ||
     carCol < 0 ||
-    carCol > 2 ||
+    carCol > NUM_COLS - 1 ||
     busRow < 0 ||
-    busRow > 2 ||
+    busRow > NUM_ROWS - 1 ||
     busCol < 0 ||
-    busCol > 2
+    busCol > NUM_COLS - 1
   ) {
-    queryResult.textContent =
-      "Invalid positions. All row and column values must be between 0 and 2.";
+    queryResult.textContent = `Invalid positions. All row and column values must be between 0 and ${
+      NUM_ROWS - 1
+    }.`;
     return;
   }
 
@@ -136,8 +140,8 @@ function queryPosition(pause = true) {
 
   // Redraw the scene with updated positions
   createGrid();
-  drawCar(carCol * 200, carRow * 200);
-  drawBus(busCol * 200, busRow * 200);
+  drawCar(carCol * 200 * SCALE_FACTOR, carRow * 200 * SCALE_FACTOR);
+  drawBus(busCol * 200 * SCALE_FACTOR, busRow * 200 * SCALE_FACTOR);
 
   // Get probability for this state
   const key = `${busRow},${busCol},${carRow},${carCol}`; // Position Order: Bus, Car
@@ -177,10 +181,20 @@ function queryPosition(pause = true) {
 function highlightPositions(carRow, carCol, busRow, busCol) {
   // Draw a highlighted overlay on the squares
   ctx.fillStyle = "rgba(255, 0, 0, 0.3)"; // Semi-transparent red for car
-  ctx.fillRect(carCol * 200, carRow * 200, 200, 200);
+  ctx.fillRect(
+    carCol * 200 * SCALE_FACTOR,
+    carRow * 200 * SCALE_FACTOR,
+    200 * SCALE_FACTOR,
+    200 * SCALE_FACTOR
+  );
 
   ctx.fillStyle = "rgba(255, 255, 0, 0.3)"; // Semi-transparent yellow for bus
-  ctx.fillRect(busCol * 200, busRow * 200, 200, 200);
+  ctx.fillRect(
+    busCol * 200 * SCALE_FACTOR,
+    busRow * 200 * SCALE_FACTOR,
+    200 * SCALE_FACTOR,
+    200 * SCALE_FACTOR
+  );
 }
 
 /**
@@ -191,9 +205,9 @@ function highlightPositions(carRow, carCol, busRow, busCol) {
  * @param {string} vehicleType - "car" or "bus"
  */
 function drawProbabilityArrows(row, col, probabilities, vehicleType) {
-  const cellCenterX = col * 200 + 100;
-  const cellCenterY = row * 200 + 100;
-  const maxArrowLength = 80; // Maximum length in pixels
+  const cellCenterX = col * 200 * SCALE_FACTOR + 100 * SCALE_FACTOR;
+  const cellCenterY = row * 200 * SCALE_FACTOR + 100 * SCALE_FACTOR;
+  const maxArrowLength = 80 * SCALE_FACTOR; // Maximum length in pixels
 
   // Set arrow color based on vehicle type
   const arrowColor =
@@ -519,8 +533,8 @@ function drawSquare(x, y, isLight, row, col) {
   ctx.fillStyle = fillColor;
   ctx.strokeStyle = "black";
   ctx.lineWidth = 8;
-  ctx.fillRect(x, y, 200, 200);
-  ctx.strokeRect(x, y, 200, 200);
+  ctx.fillRect(x, y, 200 * SCALE_FACTOR, 200 * SCALE_FACTOR);
+  ctx.strokeRect(x, y, 200 * SCALE_FACTOR, 200 * SCALE_FACTOR);
 
   // If reward visualization is enabled, add text showing the reward value
   if (rewardToggle && rewardToggle.checked) {
@@ -529,7 +543,11 @@ function drawSquare(x, y, isLight, row, col) {
       ctx.font = "bold 24px Arial";
       ctx.fillStyle = "black";
       ctx.textAlign = "center";
-      ctx.fillText(`${tileRewards[key].toFixed(1)}`, x + 160, y + 180);
+      ctx.fillText(
+        `${tileRewards[key].toFixed(1)}`,
+        x + 160 * SCALE_FACTOR,
+        y + 180 * SCALE_FACTOR
+      );
     }
   }
 }
@@ -538,10 +556,16 @@ function drawSquare(x, y, isLight, row, col) {
  * Creates the 3x3 checkerboard grid pattern
  */
 function createGrid() {
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 3; col++) {
+  for (let row = 0; row < NUM_ROWS; row++) {
+    for (let col = 0; col < NUM_COLS; col++) {
       const isLight = (row + col) % 2 === 0;
-      drawSquare(col * 200, row * 200, isLight, row, col);
+      drawSquare(
+        col * 200 * SCALE_FACTOR,
+        row * 200 * SCALE_FACTOR,
+        isLight,
+        row,
+        col
+      );
     }
   }
 }
@@ -554,18 +578,40 @@ function createGrid() {
 function drawCar(x, y) {
   // Car body (rectangle)
   ctx.fillStyle = "green";
-  ctx.fillRect(x + 40, y + 60, 120, 50);
+  ctx.fillRect(
+    x + 40 * SCALE_FACTOR,
+    y + 60 * SCALE_FACTOR,
+    120 * SCALE_FACTOR,
+    50 * SCALE_FACTOR
+  );
 
   // Car roof
-  ctx.fillRect(x + 80, y + 30, 60, 30);
+  ctx.fillRect(
+    x + 80 * SCALE_FACTOR,
+    y + 30 * SCALE_FACTOR,
+    60 * SCALE_FACTOR,
+    30 * SCALE_FACTOR
+  );
 
   // Wheels
   ctx.beginPath();
   ctx.fillStyle = "black";
   // Left wheel
-  ctx.arc(x + 70, y + 110, 20, 0, Math.PI * 2);
+  ctx.arc(
+    x + 70 * SCALE_FACTOR,
+    y + 110 * SCALE_FACTOR,
+    20 * SCALE_FACTOR,
+    0,
+    Math.PI * 2
+  );
   // Right wheel
-  ctx.arc(x + 130, y + 110, 20, 0, Math.PI * 2);
+  ctx.arc(
+    x + 130 * SCALE_FACTOR,
+    y + 110 * SCALE_FACTOR,
+    20 * SCALE_FACTOR,
+    0,
+    Math.PI * 2
+  );
   ctx.fill();
 }
 
@@ -577,26 +623,65 @@ function drawCar(x, y) {
 function drawBus(x, y) {
   // Bus body (longer than car)
   ctx.fillStyle = "yellow"; // Changed from blue to yellow
-  ctx.fillRect(x + 20, y + 60, 160, 50);
+  ctx.fillRect(
+    x + 20 * SCALE_FACTOR,
+    y + 60 * SCALE_FACTOR,
+    160 * SCALE_FACTOR,
+    50 * SCALE_FACTOR
+  );
 
   // Bus roof
-  ctx.fillRect(x + 20, y + 30, 160, 30);
+  ctx.fillRect(
+    x + 20 * SCALE_FACTOR,
+    y + 30 * SCALE_FACTOR,
+    160 * SCALE_FACTOR,
+    30 * SCALE_FACTOR
+  );
 
   // Windows (multiple)
   ctx.fillStyle = "lightyellow"; // Changed to match yellow theme
   for (let i = 0; i < 3; i++) {
-    ctx.fillRect(x + 35 + i * 50, y + 35, 30, 20);
+    ctx.fillRect(
+      x + 35 * SCALE_FACTOR + i * 50 * SCALE_FACTOR,
+      y + 35 * SCALE_FACTOR,
+      30 * SCALE_FACTOR,
+      20 * SCALE_FACTOR
+    );
   }
 
   // Wheels
   ctx.beginPath();
   ctx.fillStyle = "black";
   // Front wheels
-  ctx.arc(x + 50, y + 110, 15, 0, Math.PI * 2);
-  ctx.arc(x + 90, y + 110, 15, 0, Math.PI * 2);
+  ctx.arc(
+    x + 50 * SCALE_FACTOR,
+    y + 110 * SCALE_FACTOR,
+    15 * SCALE_FACTOR,
+    0,
+    Math.PI * 2
+  );
+  ctx.arc(
+    x + 90 * SCALE_FACTOR,
+    y + 110 * SCALE_FACTOR,
+    15 * SCALE_FACTOR,
+    0,
+    Math.PI * 2
+  );
   // Rear wheels
-  ctx.arc(x + 110, y + 110, 15, 0, Math.PI * 2);
-  ctx.arc(x + 150, y + 110, 15, 0, Math.PI * 2);
+  ctx.arc(
+    x + 110 * SCALE_FACTOR,
+    y + 110 * SCALE_FACTOR,
+    15 * SCALE_FACTOR,
+    0,
+    Math.PI * 2
+  );
+  ctx.arc(
+    x + 150 * SCALE_FACTOR,
+    y + 110 * SCALE_FACTOR,
+    15 * SCALE_FACTOR,
+    0,
+    Math.PI * 2
+  );
   ctx.fill();
 }
 
@@ -606,7 +691,7 @@ function drawBus(x, y) {
  * @returns {Array} [x, y] pixel coordinates
  */
 function getPixelPosition(gridPos) {
-  return [gridPos[1] * 200, gridPos[0] * 200];
+  return [gridPos[1] * 200 * SCALE_FACTOR, gridPos[0] * 200 * SCALE_FACTOR];
 }
 
 /**
@@ -697,8 +782,8 @@ function moveVehicleRandomly(
   const move = possibleMoves[moveInd];
 
   const newTargetPos = [
-    (currentPos[0] + move[0] + 3) % 3,
-    (currentPos[1] + move[1] + 3) % 3,
+    (currentPos[0] + move[0] + NUM_ROWS) % NUM_ROWS,
+    (currentPos[1] + move[1] + NUM_COLS) % NUM_COLS,
   ];
 
   return {
@@ -827,27 +912,43 @@ function animate(currentTime) {
 function calculatePosition(currentPos, targetPos, intermediatePos, progress) {
   if (!intermediatePos) {
     return {
-      x: lerp(currentPos[1], targetPos[1], progress),
-      y: lerp(currentPos[0], targetPos[0], progress),
+      x: lerp(
+        currentPos[1] * SCALE_FACTOR,
+        targetPos[1] * SCALE_FACTOR,
+        progress
+      ),
+      y: lerp(
+        currentPos[0] * SCALE_FACTOR,
+        targetPos[0] * SCALE_FACTOR,
+        progress
+      ),
     };
   }
 
   if (progress < 0.4) {
     const t = progress * 2.5;
     return {
-      x: lerp(currentPos[1], intermediatePos[0], t),
-      y: lerp(currentPos[0], intermediatePos[1], t),
+      x: lerp(
+        currentPos[1] * SCALE_FACTOR,
+        intermediatePos[0] * SCALE_FACTOR,
+        t
+      ),
+      y: lerp(
+        currentPos[0] * SCALE_FACTOR,
+        intermediatePos[1] * SCALE_FACTOR,
+        t
+      ),
     };
   } else if (progress < 0.6) {
     if (intermediatePos[0] < 0 || intermediatePos[0] > 2) {
       return {
-        x: intermediatePos[0] < 0 ? 3 : -1,
-        y: targetPos[0],
+        x: intermediatePos[0] < 0 ? 3 * SCALE_FACTOR : -1 * SCALE_FACTOR,
+        y: targetPos[0] * SCALE_FACTOR,
       };
     } else {
       return {
-        x: targetPos[1],
-        y: intermediatePos[1] < 0 ? 3 : -1,
+        x: targetPos[1] * SCALE_FACTOR,
+        y: intermediatePos[1] < 0 ? 3 * SCALE_FACTOR : -1 * SCALE_FACTOR,
       };
     }
   } else {
@@ -870,8 +971,8 @@ function calculatePosition(currentPos, targetPos, intermediatePos, progress) {
  * Initial canvas setup and animation start
  */
 function setupCanvas() {
-  canvas.width = 600;
-  canvas.height = 600;
+  canvas.width = 200 * NUM_COLS * SCALE_FACTOR;
+  canvas.height = 200 * NUM_ROWS * SCALE_FACTOR;
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1126,6 +1227,7 @@ function setupDraggableModal() {
 
   function dragEnd() {
     isDragging = false;
+    // SCALE_FACTOR = 1;
   }
 
   function drag(e) {
@@ -1156,5 +1258,10 @@ function setupDraggableModal() {
   // toggleContent("minimize");
 }
 
+const scaleFactorInput = document.getElementById("scaleFactor");
+scaleFactorInput.addEventListener("change", (e) => {
+  SCALE_FACTOR = parseFloat(e.target.value);
+  setupCanvas(); // Redraw everything with new scale
+});
 // Start the animation
 setupCanvas();
