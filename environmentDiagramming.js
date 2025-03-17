@@ -48,8 +48,8 @@ const directionVectors = [
   [-1, 0], // Left
   [1, 0], // Right
 ];
-let NUM_ROWS = 3;
-let NUM_COLS = 3;
+let NUM_ROWS = 1;
+let NUM_COLS = 1;
 let SCALE_FACTOR = 1;
 
 // Load the probability data from text file
@@ -993,6 +993,8 @@ function calculatePosition(currentPos, targetPos, intermediatePos, progress) {
  * Initial canvas setup and animation start
  */
 async function setupCanvas() {
+  const probabilitiesLoaded = await loadProbabilityData();
+  await loadRewardData();
   canvas.width = 200 * NUM_COLS * SCALE_FACTOR;
   canvas.height = 200 * NUM_ROWS * SCALE_FACTOR;
   ctx.fillStyle = "black";
@@ -1000,8 +1002,6 @@ async function setupCanvas() {
 
   // Load both datasets
   // loadProbabilityData();
-  const probabilitiesLoaded = await loadProbabilityData();
-  await loadRewardData();
 
   createGrid();
 
