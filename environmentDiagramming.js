@@ -55,7 +55,7 @@ let SCALE_FACTOR = 1;
 // Load the probability data from text file
 async function loadProbabilityData() {
   try {
-    const response = await fetch("nash_equilibrium.txt");
+    const response = await fetch("sharedNetworkProbabilitiesStd.txt"); //nash_equilibrium.txt
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
