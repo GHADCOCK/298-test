@@ -52,6 +52,14 @@ let NUM_ROWS = 1;
 let NUM_COLS = 1;
 let SCALE_FACTOR = 1;
 
+let carTrail = [];
+let busTrail = [];
+const TRAIL_LENGTH = 10; // How many previous positions to remember
+const TRAIL_OPACITY_START = 0.5; // Starting opacity for trails
+
+// Add this near the top with other state variables
+let trailModeEnabled = true;
+
 // Load the probability data from text file
 async function loadProbabilityData() {
   try {
@@ -149,19 +157,54 @@ function queryPosition(pause = true) {
   // Update vehicle positions to teleport them to queried locations
   carPosition = [carRow, carCol];
   carTargetPosition = [carRow, carCol];
-  carMoveProgress = 1; // Ensure movement is complete
+  carMoveProgress = 1;
   carIntermediatePosition = null;
 
   busPosition = [busRow, busCol];
   busTargetPosition = [busRow, busCol];
-  busMoveProgress = 1; // Ensure movement is complete
+  busMoveProgress = 1;
   busIntermediatePosition = null;
 
-  // Clear the canvas completely before redrawing
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Add current positions to trails if enabled
+  if (trailModeEnabled) {
+    const carPixelPos = {
+      x: carPosition[1] * 200 * SCALE_FACTOR,
+      y: carPosition[0] * 200 * SCALE_FACTOR,
+    };
+    const busPixelPos = {
+      x: busPosition[1] * 200 * SCALE_FACTOR,
+      y: busPosition[0] * 200 * SCALE_FACTOR,
+    };
 
-  // Redraw the scene with updated positions
+    if (
+      carTrail.length === 0 ||
+      Math.abs(carPixelPos.x - carTrail[0].x) > 1 ||
+      Math.abs(carPixelPos.y - carTrail[0].y) > 1
+    ) {
+      carTrail.unshift(carPixelPos);
+      if (carTrail.length > TRAIL_LENGTH) carTrail.pop();
+    }
+
+    if (
+      busTrail.length === 0 ||
+      Math.abs(busPixelPos.x - busTrail[0].x) > 1 ||
+      Math.abs(busPixelPos.y - busTrail[0].y) > 1
+    ) {
+      busTrail.unshift(busPixelPos);
+      if (busTrail.length > TRAIL_LENGTH) busTrail.pop();
+    }
+  }
+
+  // Clear and redraw
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   createGrid();
+
+  // Draw trails before vehicles if enabled
+  if (trailModeEnabled) {
+    drawTrails();
+  }
+
+  // Draw vehicles
   drawCar(carCol * 200 * SCALE_FACTOR, carRow * 200 * SCALE_FACTOR);
   drawBus(busCol * 200 * SCALE_FACTOR, busRow * 200 * SCALE_FACTOR);
 
@@ -444,7 +487,7 @@ rewardToggle.addEventListener("change", function () {
 // Load the reward data from text file
 async function loadRewardData() {
   try {
-    const response = await fetch("TileRewardMatrix.txt");
+    const response = await fetch("nash_equilibrium.txt");
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -827,12 +870,35 @@ function animate(currentTime) {
   // animate function
   if (isPaused) return;
 
-  // Store the current drawings to check for arrows
-  const hasArrows = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   createGrid();
+
+  // Only update and draw trails if enabled TRAIL MODE
+  if (trailModeEnabled) {
+    console.log("Drawing trails");
+    if (currentTime - lastMoveTime >= move_interval / speedMultiplier) {
+      if (carMoveProgress === 1) {
+        const carPixelPos = {
+          x: carPosition[1] * 200 * SCALE_FACTOR,
+          y: carPosition[0] * 200 * SCALE_FACTOR,
+        };
+        carTrail.unshift(carPixelPos);
+        if (carTrail.length > TRAIL_LENGTH) carTrail.pop();
+      }
+
+      if (busMoveProgress === 1) {
+        const busPixelPos = {
+          x: busPosition[1] * 200 * SCALE_FACTOR,
+          y: busPosition[0] * 200 * SCALE_FACTOR,
+        };
+        busTrail.unshift(busPixelPos);
+        if (busTrail.length > TRAIL_LENGTH) busTrail.pop();
+      }
+    }
+
+    drawTrails();
+  }
 
   if (currentTime - lastMoveTime >= move_interval / speedMultiplier) {
     // Get current state key
@@ -1015,6 +1081,7 @@ async function setupCanvas() {
   requestAnimationFrame(animate);
 }
 
+// Modify the setupSettingsModal function to add the trail mode toggle handler
 function setupSettingsModal() {
   const settingsModal = document.getElementById("settingsModal");
   const settingsHeader = settingsModal.querySelector(".modal-header");
@@ -1134,6 +1201,25 @@ function setupSettingsModal() {
   settingsHeader.addEventListener("mousedown", dragStart, false);
   document.addEventListener("mouseup", dragEnd, false);
   document.addEventListener("mousemove", drag, false);
+
+  const trailModeToggle = document.getElementById("trailModeToggle");
+
+  // Setup trail mode toggle
+  trailModeToggle.addEventListener("change", () => {
+    trailModeEnabled = trailModeToggle.checked;
+    // Clear existing trails when disabled
+    if (!trailModeEnabled) {
+      carTrail = [];
+      busTrail = [];
+    }
+    // Save preference
+    localStorage.setItem("trailMode", trailModeEnabled);
+  });
+
+  // Load saved trail mode preference
+  const savedTrailMode = localStorage.getItem("trailMode") !== "false"; // default to true if not set
+  trailModeToggle.checked = savedTrailMode;
+  trailModeEnabled = savedTrailMode;
 }
 
 // Toggle the modal
@@ -1286,5 +1372,115 @@ scaleFactorInput.addEventListener("change", (e) => {
   SCALE_FACTOR = parseFloat(e.target.value);
   setupCanvas(); // Redraw everything with new scale
 });
+
+// Modify the drawTrails function to include a check
+function drawTrails() {
+  if (!trailModeEnabled) return;
+
+  // Draw car trail
+  if (carTrail.length > 0) {
+    ctx.beginPath();
+    ctx.lineWidth = 4 * SCALE_FACTOR;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // Start from current position if car is moving
+    if (carMoveProgress < 1) {
+      let currentPos = calculatePosition(
+        carPosition,
+        carTargetPosition,
+        carIntermediatePosition,
+        carMoveProgress
+      );
+      ctx.moveTo(
+        currentPos.x * 200 + 100 * SCALE_FACTOR,
+        currentPos.y * 200 + 100 * SCALE_FACTOR
+      );
+    } else {
+      ctx.moveTo(
+        carTrail[0].x + 100 * SCALE_FACTOR,
+        carTrail[0].y + 100 * SCALE_FACTOR
+      );
+    }
+
+    // Draw lines connecting all trail points
+    carTrail.forEach((pos, index) => {
+      const opacity = TRAIL_OPACITY_START * (1 - index / TRAIL_LENGTH);
+      ctx.strokeStyle = `rgba(0, 255, 0, ${opacity})`;
+      ctx.lineTo(pos.x + 100 * SCALE_FACTOR, pos.y + 100 * SCALE_FACTOR);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pos.x + 100 * SCALE_FACTOR, pos.y + 100 * SCALE_FACTOR);
+    });
+
+    // Draw dots
+    carTrail.forEach((pos, index) => {
+      const opacity = TRAIL_OPACITY_START * (1 - index / TRAIL_LENGTH);
+      ctx.fillStyle = `rgba(0, 255, 0, ${opacity})`;
+      ctx.beginPath();
+      ctx.arc(
+        pos.x + 100 * SCALE_FACTOR,
+        pos.y + 100 * SCALE_FACTOR,
+        3 * SCALE_FACTOR,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    });
+  }
+
+  // Draw bus trail
+  if (busTrail.length > 0) {
+    ctx.beginPath();
+    ctx.lineWidth = 4 * SCALE_FACTOR;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // Start from current position if bus is moving
+    if (busMoveProgress < 1) {
+      let currentPos = calculatePosition(
+        busPosition,
+        busTargetPosition,
+        busIntermediatePosition,
+        busMoveProgress
+      );
+      ctx.moveTo(
+        currentPos.x * 200 + 100 * SCALE_FACTOR,
+        currentPos.y * 200 + 100 * SCALE_FACTOR
+      );
+    } else {
+      ctx.moveTo(
+        busTrail[0].x + 100 * SCALE_FACTOR,
+        busTrail[0].y + 100 * SCALE_FACTOR
+      );
+    }
+
+    // Draw lines connecting all trail points
+    busTrail.forEach((pos, index) => {
+      const opacity = TRAIL_OPACITY_START * (1 - index / TRAIL_LENGTH);
+      ctx.strokeStyle = `rgba(218, 165, 32, ${opacity})`;
+      ctx.lineTo(pos.x + 100 * SCALE_FACTOR, pos.y + 100 * SCALE_FACTOR);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pos.x + 100 * SCALE_FACTOR, pos.y + 100 * SCALE_FACTOR);
+    });
+
+    // Draw dots
+    busTrail.forEach((pos, index) => {
+      const opacity = TRAIL_OPACITY_START * (1 - index / TRAIL_LENGTH);
+      ctx.fillStyle = `rgba(218, 165, 32, ${opacity})`;
+      ctx.beginPath();
+      ctx.arc(
+        pos.x + 100 * SCALE_FACTOR,
+        pos.y + 100 * SCALE_FACTOR,
+        3 * SCALE_FACTOR,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    });
+  }
+}
+
 // Start the animation
 setupCanvas();
