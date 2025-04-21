@@ -1,0 +1,23 @@
+Policy Network Probabilities
+===========================
+
+
+State: Chaser at (0, 0), Escaper at (1, 1)
+Chaser actions: UP: 0.008, DOWN: 0.213, LEFT: 0.003, RIGHT: 0.768, STAY: 0.007
+Escaper actions: UP: 0.095, DOWN: 0.340, LEFT: 0.025, RIGHT: 0.440, STAY: 0.101
+--------------------------------------------------
+
+State: Chaser at (1, 1), Escaper at (0, 0)
+Chaser actions: UP: 0.823, DOWN: 0.003, LEFT: 0.168, RIGHT: 0.004, STAY: 0.001
+Escaper actions: UP: 0.913, DOWN: 0.024, LEFT: 0.027, RIGHT: 0.026, STAY: 0.010
+--------------------------------------------------
+
+State: Chaser at (0, 0), Escaper at (2, 2)
+Chaser actions: UP: 0.000, DOWN: 0.190, LEFT: 0.000, RIGHT: 0.809, STAY: 0.001
+Escaper actions: UP: 0.037, DOWN: 0.353, LEFT: 0.007, RIGHT: 0.521, STAY: 0.082
+--------------------------------------------------
+
+State: Chaser at (1, 1), Escaper at (1, 2)
+Chaser actions: UP: 0.083, DOWN: 0.018, LEFT: 0.003, RIGHT: 0.894, STAY: 0.002
+Escaper actions: UP: 0.636, DOWN: 0.075, LEFT: 0.010, RIGHT: 0.247, STAY: 0.032
+--------------------------------------------------
